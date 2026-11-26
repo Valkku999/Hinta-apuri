@@ -71,16 +71,11 @@
         "hockeybase.fi": {
           "name": "hockeybase.fi",
           "url": "https://www.hockeybase.fi/products/ccm-tacks-xf-90-senior-ice-hockey-skate.html",
-          "current_price": 90.0,
+          "current_price": null,
           "original_price": null,
           "last_checked": "2026-11-26T20:12:45Z",
           "error": null,
           "history": [
-            {
-              "date": "2026-11-26",
-              "price": 90.0,
-              "original_price": null
-            }
           ]
         }
       }
