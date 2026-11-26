@@ -7,6 +7,7 @@ from datetime import datetime, timezone
 from urllib.parse import urlparse
 from urllib.robotparser import RobotFileParser
 
+import cloudscraper
 import requests
 from bs4 import BeautifulSoup
 
@@ -209,11 +210,13 @@ def fetch_store_price(url: str, shops_config: dict) -> tuple[float | None, float
 
     response = None
     last_err = None
-    session = requests.Session()
+    scraper_client = cloudscraper.create_scraper(
+        browser={"browser": "chrome", "platform": "windows", "desktop": True}
+    )
 
     for attempt in range(1, 4):
         try:
-            response = session.get(url, headers=headers, timeout=25)
+            response = scraper_client.get(url, headers=headers, timeout=25)
             response.raise_for_status()
             last_err = None
             break
