@@ -234,6 +234,12 @@ def fetch_store_price(url: str, shops_config: dict) -> tuple[float | None, float
     if orig_price is None and css_orig is not None:
         orig_price = css_orig
 
+    if price is None:
+        fb_price, fb_orig = extract_fallback_price(soup)
+        price = fb_price
+        if orig_price is None and fb_orig is not None:
+            orig_price = fb_orig
+            
     if price is not None and orig_price is not None and orig_price <= price:
         orig_price = None
 
@@ -243,6 +249,57 @@ def fetch_store_price(url: str, shops_config: dict) -> tuple[float | None, float
         return None, None, msg
 
     return price, orig_price, None
+
+
+def extract_fallback_price(soup: BeautifulSoup) -> tuple[float | None, float | None]:
+    """Yleinen varahaku mille tahansa kaupalle, kun JSON-LD ja shops.json eivät tuota hintaa."""
+    candidates = []
+
+    # 1. Etsitään elementtejä, joiden id/class/name/itemprop viittaa hintaan
+    price_attr_pattern = re.compile(r"(price|hinta|amount|cost|tarjous|sale|offer)", re.I)
+    for el in soup.find_all(["span", "div", "p", "strong", "b", "meta", "data"]):
+        attrs_blob = " ".join([
+            str(el.get("id") or ""),
+            " ".join(el.get("class") or []),
+            str(el.get("name") or ""),
+            str(el.get("itemprop") or "")
+        ])
+        if not price_attr_pattern.search(attrs_blob):
+            continue
+
+        raw_val = el.get("content") or el.get("value") or el.get_text(" ", strip=True)
+        if not raw_val or len(str(raw_val)) > 80:
+            continue
+
+        parsed = parse_price(raw_val)
+        if parsed is not None:
+            # Tarkistetaan onko elementti yliviivattu
+            style_blob = (str(el.get("style") or "") + " " + " ".join(el.get("class") or [])).lower()
+            is_struck = el.name in ("del", "s", "strike") or "line-through" in style_blob or "old" in style_blob or "compare" in style_blob
+            candidates.append((parsed, is_struck))
+
+    # 2. Jos ei löytynyt attribuuteilla, etsitään tekstistä euromerkillä varustettuja hintoja
+    if not candidates:
+        page_text = soup.get_text(" ", strip=True)
+        euro_matches = re.findall(r"(?:€|EUR)?\s*(\d{1,4}(?:[ \u00a0.]\d{3})*(?:,\d{2})?|\d{1,4}\.\d{2})\s*(?:€|EUR)?", page_text, re.I)
+        for m in euro_matches:
+            parsed = parse_price(m)
+            if parsed is not None:
+                candidates.append((parsed, False))
+
+    if not candidates:
+        return None, None
+
+    non_struck = [p for p, struck in candidates if not struck]
+    struck = [p for p, struck in candidates if struck]
+
+    current_price = min(non_struck) if non_struck else min(p for p, _ in candidates)
+    original_price = None
+    higher_struck = [p for p in struck if p > current_price]
+    if higher_struck:
+        original_price = min(higher_struck)
+
+    return current_price, original_price
 
 
 def main():
