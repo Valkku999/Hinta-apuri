@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-26T16:36:02Z",
+  "last_updated": "2026-11-26T18:22:40Z",
   "products": [
     {
       "id": "bilt-hamber-touch-less-5l",
@@ -11,14 +11,14 @@
           "name": "Autodude",
           "url": "https://www.autodude.fi/fi/tuote/esipesuaine_bilt_hamber_touch_less_v2",
           "current_price": 44.01,
-          "original_price": 48.90,
-          "last_checked": "2026-11-26T16:36:02Z",
+          "original_price": 48.9,
+          "last_checked": "2026-11-26T18:22:40Z",
           "error": null,
           "history": [
             {
               "date": "2026-11-26",
               "price": 44.01,
-              "original_price": 48.90
+              "original_price": 48.9
             }
           ]
         },
@@ -27,7 +27,7 @@
           "url": "https://www.autonhoitokauppa.fi/bilt-hamber-touch-less-5-l",
           "current_price": 49.9,
           "original_price": null,
-          "last_checked": "2026-11-26T16:36:02Z",
+          "last_checked": "2026-11-26T18:22:40Z",
           "error": null,
           "history": [
             {
@@ -51,6 +51,38 @@
               "original_price": 63.45
             }
           ]
+        }
+      }
+    },
+    {
+      "id": "bilt-hamber-auto-wash-1000ml",
+      "name": "Bilt Hamber Auto-Wash 1000ml",
+      "brand": "Bilt Hamber",
+      "target_price": null,
+      "stores": {
+        "autodude.fi": {
+          "name": "Autodude",
+          "url": "https://www.autodude.fi/fi/tuote/autoshampoo_bilt_hamber_auto_wash/HS5999-5718?gad_source=1&gad_campaignid=21860150135&gbraid=0AAAAA-ZvmwhXsIPq3wYsT-fD8tEs4C79T&gclid=CjwKCAiAzp_YBhAJEiwASf8kHfUchwtBa5NnA9AXSQXXXhyYxGYm6h1KUv8_rKKuGMmZKkfHNt9UExoClHkQAvD_BwE",
+          "current_price": 41.31,
+          "original_price": null,
+          "last_checked": "2026-11-26T18:22:40Z",
+          "error": null,
+          "history": [
+            {
+              "date": "2026-11-26",
+              "price": 41.31,
+              "original_price": null
+            }
+          ]
+        },
+        "springriver.fi": {
+          "name": "SpringRiver",
+          "url": "https://www.springriver.fi/bilt-hamber-auto-wash-1l.html",
+          "current_price": null,
+          "original_price": null,
+          "last_checked": null,
+          "error": "HTTP-virhe: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))",
+          "history": []
         }
       }
     }
