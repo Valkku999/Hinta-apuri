@@ -192,10 +192,17 @@ def fetch_store_price(url: str, shops_config: dict) -> tuple[float | None, float
         logging.warning(f"{url}: {msg}")
         return None, None, msg
 
+    parsed_target = urlparse(url)
+    origin_url = f"{parsed_target.scheme}://{parsed_target.netloc}/"
+
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
         "Accept-Language": "fi-FI,fi;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Referer": origin_url,
+        "Sec-Fetch-Dest": "document",
+        "Sec-Fetch-Mode": "navigate",
+        "Sec-Fetch-Site": "same-origin",
         "Connection": "keep-alive",
         "Upgrade-Insecure-Requests": "1"
     }
