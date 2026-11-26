@@ -193,34 +193,45 @@ def fetch_store_price(url: str, shops_config: dict) -> tuple[float | None, float
         return None, None, msg
 
     headers = {
-        "User-Agent": USER_AGENT,
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8",
-        "Accept-Language": "fi-FI,fi;q=0.9,en;q=0.8"
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
+        "Accept-Language": "fi-FI,fi;q=0.9,en-US;q=0.8,en;q=0.7",
+        "Connection": "keep-alive",
+        "Upgrade-Insecure-Requests": "1"
     }
 
-    try:
-        response = requests.get(url, headers=headers, timeout=20)
-        response.raise_for_status()
-    except requests.RequestException as e:
-        msg = f"HTTP-virhe: {str(e)}"
-        logging.error(f"{url}: {msg}")
-        return None, None, msg
+    response = None
+    last_err = None
+    session = requests.Session()
+
+    for attempt in range(1, 4):
+        try:
+            response = session.get(url, headers=headers, timeout=25)
+            response.raise_for_status()
+            last_err = None
+            break
+        except requests.RequestException as e:
+            last_err = f"HTTP-virhe: {str(e)}"
+            logging.warning(f"{url} (yritys {attempt}/3): {last_err}")
+            if attempt < 3:
+                time.sleep(2.5 * attempt)
+
+    if last_err is not None or response is None:
+        logging.error(f"{url}: {last_err}")
+        return None, None, last_err
 
     soup = BeautifulSoup(response.text, "lxml")
     domain = get_domain_key(url)
     shop_cfg = shops_config.get(domain, {})
 
-    # 1. Ensisijaisesti JSON-LD
     price, orig_price = extract_json_ld(soup)
 
-    # 2. Täydennetään tai korvataan CSS-selektoreilla
     css_price, css_orig = extract_css(soup, shop_cfg)
     if price is None:
         price = css_price
     if orig_price is None and css_orig is not None:
         orig_price = css_orig
 
-    # Varmistetaan ettei normaalihinta ole pienempi tai yhtä suuri kuin myyntihinta
     if price is not None and orig_price is not None and orig_price <= price:
         orig_price = None
 
