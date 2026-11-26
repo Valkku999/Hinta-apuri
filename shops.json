@@ -29,19 +29,5 @@
       "del",
       "s"
     ]
-  },
-  "springriver.fi": {
-    "name": "SpringRiver",
-    "price_selectors": [
-      ".special-price .price",
-      ".price-final_price .price",
-      ".regular-price .price",
-      "[itemprop='price']"
-    ],
-    "original_price_selectors": [
-      ".old-price .price",
-      ".price-from .price",
-      "del .price"
-    ]
   }
 }
