@@ -311,7 +311,6 @@
       position: relative;
     }
 
-    /* Modaalit */
     dialog {
       background: var(--surface);
       color: var(--text);
@@ -414,7 +413,7 @@
       <div class="form-group">
         <label for="prod-brand">Valmistaja / Brändi</label>
         <input type="text" id="prod-brand" placeholder="esim. Bilt Hamber" />
-        <p class="form-hint">Jos brändi on <strong>Bilt Hamber</strong>, hälytys laukeaa automaattisesti kun hinta on vähintään 10 % alle sivun ilmoittaman yliviivatun normaalihinnan.</p>
+        <p class="form-hint">Jos brändi on <strong>Bilt Hamber</strong>, hälytys laukeaa kun hinta on vähintään 10 % alennuksessa Autodudessa tai alittaa Autoduden 10 % alennetun hinnan.</p>
       </div>
 
       <div class="form-group" id="target-price-group">
@@ -461,7 +460,6 @@ https://www.autonhoitokauppa.fi/..."></textarea>
     const chartInstances = {};
 
     function getRepoConfig() {
-      // Yritetään päätellä automaattisesti *.github.io -osoitteesta
       let defaultOwner = '';
       let defaultRepo = '';
       const host = window.location.hostname;
@@ -520,11 +518,24 @@ https://www.autonhoitokauppa.fi/..."></textarea>
       return brand.includes('bilt hamber') || name.includes('bilt hamber');
     }
 
-    function evaluateStoreDeal(product, store) {
+    function getAutodudeDiscountThreshold(product) {
+      const stores = product.stores || {};
+      const autodude = stores['autodude.fi'] || Object.values(stores).find(s =>
+        (s.name || '').toLowerCase().includes('autodude') || (s.url || '').includes('autodude.fi')
+      );
+      if (!autodude) return null;
+
+      if (autodude.original_price && autodude.original_price > 0) {
+        return Number((autodude.original_price * 0.90).toFixed(2));
+      }
+      return null;
+    }
+
+    function evaluateStoreDeal(product, store, autodudeThreshold = null) {
       const price = store.current_price;
       const orig = store.original_price;
-      if (price === null || price === undefined) {
-        return { isDeal: false, discountPct: null };
+      if (price === null || price === undefined || isNaN(price)) {
+        return { isDeal: false, discountPct: null, reason: null };
       }
 
       let discountPct = null;
@@ -533,13 +544,27 @@ https://www.autonhoitokauppa.fi/..."></textarea>
       }
 
       if (isBiltHamber(product)) {
-        // Vähintään 10 % alennus sivun ilmoittamasta yliviivatusta normaalihinnasta
-        const isDeal = Boolean(orig && price <= orig * 0.9001);
-        return { isDeal, discountPct };
+        const isAutodude = (store.key === 'autodude.fi') ||
+          (store.name || '').toLowerCase().includes('autodude') ||
+          (store.url || '').includes('autodude.fi');
+
+        const autodudeTenPctOff = isAutodude && Boolean(orig && price <= orig * 0.9001);
+        const belowAutodudeDiscountedPrice =
+          autodudeThreshold !== null && price < autodudeThreshold;
+
+        const isDeal = autodudeTenPctOff || belowAutodudeDiscountedPrice;
+        let reason = null;
+        if (autodudeTenPctOff) {
+          reason = 'Autodude väh. -10 %';
+        } else if (belowAutodudeDiscountedPrice) {
+          reason = `Alle Autoduden -10 % rajan (${formatEur(autodudeThreshold)})`;
+        }
+
+        return { isDeal, discountPct, reason };
       } else {
         const target = product.target_price;
         const isDeal = Boolean(target && price <= target);
-        return { isDeal, discountPct };
+        return { isDeal, discountPct, reason: isDeal ? 'Tavoitehinta alitettu' : null };
       }
     }
 
@@ -656,11 +681,15 @@ https://www.autonhoitokauppa.fi/..."></textarea>
           .filter(p => p !== null && p !== undefined && !isNaN(p));
         const minPrice = validPrices.length > 0 ? Math.min(...validPrices) : null;
 
+        const autodudeThreshold = isBiltHamber(product) ? getAutodudeDiscountThreshold(product) : null;
         let anyDealActive = false;
+
         const rowsHtml = storesArr.map((store) => {
           const isCheapest = minPrice !== null && store.current_price === minPrice;
-          const deal = evaluateStoreDeal(product, store);
-          if (deal.isDeal) anyDealActive = true;
+          const deal = evaluateStoreDeal(product, store, autodudeThreshold);
+          if (deal.isDeal) {
+            anyDealActive = true;
+          }
 
           let priceCell = `<span class="price-main ${isCheapest ? 'price-cheapest' : ''}">${formatEur(store.current_price)}</span>`;
           if (store.original_price && store.current_price && store.original_price > store.current_price) {
@@ -668,6 +697,11 @@ https://www.autonhoitokauppa.fi/..."></textarea>
           }
           if (deal.discountPct !== null) {
             priceCell += `<span class="discount-tag ${deal.isDeal ? 'hits-target' : ''}">-${deal.discountPct} %</span>`;
+          }
+          if (deal.isDeal && !isBiltHamber(product)) {
+            priceCell += `<span class="discount-tag hits-target">Tavoite</span>`;
+          } else if (deal.isDeal && deal.reason) {
+            priceCell += `<span class="discount-tag hits-target">Hälytys</span>`;
           }
           if (store.error) {
             priceCell += `<span class="error-text">⚠️ ${store.error}</span>`;
@@ -689,7 +723,9 @@ https://www.autonhoitokauppa.fi/..."></textarea>
 
         const bhRule = isBiltHamber(product);
         const ruleBadgeText = bhRule
-          ? 'Hälytysraja: väh. -10 % normaalihinnasta'
+          ? (autodudeThreshold !== null
+              ? `Bilt Hamber -hälytys: Autodude -10 % tai alle ${formatEur(autodudeThreshold)}`
+              : 'Bilt Hamber -hälytys: Autodude -10 %')
           : (product.target_price ? `Tavoitehinta: ≤ ${formatEur(product.target_price)}` : 'Ei tavoitehintaa');
 
         const card = document.createElement('article');
@@ -743,7 +779,6 @@ https://www.autonhoitokauppa.fi/..."></textarea>
         chartInstances[product.id].destroy();
       }
 
-      // Kerätään kaikki uniikit päivämäärät aikajärjestyksessä
       const dateSet = new Set();
       storesArr.forEach(s => {
         (s.history || []).forEach(h => dateSet.add(h.date));
