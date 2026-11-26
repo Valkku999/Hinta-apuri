@@ -21,7 +21,7 @@ logging.basicConfig(
 
 PRODUCTS_FILE = os.path.join("data", "products.json")
 SHOPS_FILE = "shops.json"
-USER_AGENT = "Mozilla/5.0 (compatible; OmaHintaseurantaBot/1.0; +https://github.com/)"
+USER_AGENT = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36"
 REQUEST_DELAY = 3.5  # Kohtelias viive pyyntöjen välillä (sekuntia)
 
 robots_cache = {}
@@ -60,12 +60,10 @@ def parse_price(raw_value) -> float | None:
         return round(val, 2) if val > 0 else None
 
     text = str(raw_value).strip()
-    # Poistetaan välilyönnit ja valuuttamerkit, jätetään numerot, piste ja pilkku
     cleaned = re.sub(r"[^\d,\.]", "", text)
     if not cleaned:
         return None
 
-    # Jos sekä piste että pilkku esiintyvät (esim. 1.299,90)
     if "," in cleaned and "." in cleaned:
         if cleaned.rfind(",") > cleaned.rfind("."):
             cleaned = cleaned.replace(".", "").replace(",", ".")
@@ -96,7 +94,6 @@ def extract_json_ld(soup: BeautifulSoup) -> tuple[float | None, float | None]:
             continue
 
         items = data if isinstance(data, list) else [data]
-        # Puretaan myös @graph-rakenteet
         expanded = []
         for item in items:
             if isinstance(item, dict) and "@graph" in item:
@@ -124,13 +121,11 @@ def extract_json_ld(soup: BeautifulSoup) -> tuple[float | None, float | None]:
             for offer in offer_list:
                 if not isinstance(offer, dict):
                     continue
-                # Nykyinen hinta
                 p = offer.get("price") or offer.get("lowPrice")
                 parsed_p = parse_price(p)
                 if parsed_p and current_price is None:
                     current_price = parsed_p
 
-                # Mahdollinen vertailu-/normaalihinta
                 high_p = offer.get("highPrice")
                 parsed_high = parse_price(high_p)
                 if parsed_high and current_price and parsed_high > current_price:
@@ -196,7 +191,7 @@ def fetch_store_price(url: str, shops_config: dict) -> tuple[float | None, float
     origin_url = f"{parsed_target.scheme}://{parsed_target.netloc}/"
 
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/126.0.0.0 Safari/537.36",
+        "User-Agent": USER_AGENT,
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,*/*;q=0.8",
         "Accept-Language": "fi-FI,fi;q=0.9,en-US;q=0.8,en;q=0.7",
         "Referer": origin_url,
@@ -208,12 +203,12 @@ def fetch_store_price(url: str, shops_config: dict) -> tuple[float | None, float
     }
 
     response = None
-  last_err = None
-  session = requests.Session()
+    last_err = None
+    session = requests.Session()
 
-  for attempt in range(1, 4):
-      try:
-          response = session.get(url, headers=headers, timeout=25)
+    for attempt in range(1, 4):
+        try:
+            response = session.get(url, headers=headers, timeout=25)
             response.raise_for_status()
             last_err = None
             break
@@ -290,7 +285,6 @@ def main():
                 store_info["error"] = None
 
                 history = store_info.setdefault("history", [])
-                # Päivitetään saman päivän merkintä tai lisätään uusi
                 if history and history[-1].get("date") == today_str:
                     history[-1]["price"] = price
                     history[-1]["original_price"] = effective_orig
@@ -302,7 +296,6 @@ def main():
                     })
                 logging.info(f"    OK: {price:.2f} € (norm. {effective_orig if effective_orig else '-'})")
             else:
-                # Säilytetään edellinen hinta ja kirjataan virhe
                 store_info["error"] = error or "Tuntematon virhe"
                 logging.warning(f"    Virhe (säilytetään vanha hinta): {store_info['error']}")
 
