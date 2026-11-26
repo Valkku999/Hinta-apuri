@@ -254,37 +254,54 @@ def fetch_store_price(url: str, shops_config: dict) -> tuple[float | None, float
 def extract_fallback_price(soup: BeautifulSoup) -> tuple[float | None, float | None]:
     """Yleinen varahaku mille tahansa kaupalle, kun JSON-LD ja shops.json eivät tuota hintaa."""
     candidates = []
-
-    # 1. Etsitään elementtejä, joiden id/class/name/itemprop viittaa hintaan
+    currency_pattern = re.compile(r"(€|EUR)", re.I)
     price_attr_pattern = re.compile(r"(price|hinta|amount|cost|tarjous|sale|offer)", re.I)
-    for el in soup.find_all(["span", "div", "p", "strong", "b", "meta", "data"]):
+    ignore_attr_pattern = re.compile(r"(title|name|heading|sku|code|model|shipping|toimitus|vero|tax)", re.I)
+
+    # 1. Konekieliset meta/data-hintakentät (esim. <meta itemprop="price" content="379">)
+    for el in soup.find_all(["meta", "data"]):
+        itemprop = str(el.get("itemprop") or "").lower()
+        if itemprop == "price" or el.get("data-price-amount"):
+            raw_val = el.get("content") or el.get("value") or el.get("data-price-amount")
+            parsed = parse_price(raw_val)
+            if parsed is not None:
+                candidates.append((parsed, False))
+
+    # 2. Näkyvät hintaelementit: vaaditaan valuuttamerkki (€ tai EUR), jotta mallinimet (esim. XF 90) eivät tartu
+    for el in soup.find_all(["span", "div", "p", "strong", "b"]):
         attrs_blob = " ".join([
             str(el.get("id") or ""),
             " ".join(el.get("class") or []),
-            str(el.get("name") or ""),
             str(el.get("itemprop") or "")
         ])
         if not price_attr_pattern.search(attrs_blob):
             continue
-
-        raw_val = el.get("content") or el.get("value") or el.get_text(" ", strip=True)
-        if not raw_val or len(str(raw_val)) > 80:
+        if ignore_attr_pattern.search(attrs_blob):
             continue
 
-        parsed = parse_price(raw_val)
+        text_val = el.get_text(" ", strip=True)
+        if not text_val or len(text_val) > 40 or not currency_pattern.search(text_val):
+            continue
+
+        parsed = parse_price(text_val)
         if parsed is not None:
-            # Tarkistetaan onko elementti yliviivattu
             style_blob = (str(el.get("style") or "") + " " + " ".join(el.get("class") or [])).lower()
-            is_struck = el.name in ("del", "s", "strike") or "line-through" in style_blob or "old" in style_blob or "compare" in style_blob
+            is_struck = (
+                el.name in ("del", "s", "strike")
+                or el.find_parent(["del", "s", "strike"]) is not None
+                or "line-through" in style_blob
+                or "old" in style_blob
+                or "compare" in style_blob
+            )
             candidates.append((parsed, is_struck))
 
-    # 2. Jos ei löytynyt attribuuteilla, etsitään tekstistä euromerkillä varustettuja hintoja
+    # 3. Viimeinen varakeino: etsitään koko sivulta vain selkeät "luku + €" -merkinnät
     if not candidates:
         page_text = soup.get_text(" ", strip=True)
-        euro_matches = re.findall(r"(?:€|EUR)?\s*(\d{1,4}(?:[ \u00a0.]\d{3})*(?:,\d{2})?|\d{1,4}\.\d{2})\s*(?:€|EUR)?", page_text, re.I)
+        euro_matches = re.findall(r"(\d{1,4}(?:[ \u00a0.]\d{3})*(?:,\d{2})?|\d{1,4}\.\d{2})\s*€", page_text)
         for m in euro_matches:
             parsed = parse_price(m)
-            if parsed is not None:
+            if parsed is not None and parsed >= 5.0:
                 candidates.append((parsed, False))
 
     if not candidates:
