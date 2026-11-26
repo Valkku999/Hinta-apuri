@@ -261,8 +261,13 @@ def main():
             price, orig_price, error = fetch_store_price(url, shops_config)
 
             if error is None and price is not None:
+                previous_orig = store_info.get("original_price")
+                effective_orig = orig_price if orig_price is not None else previous_orig
+                if effective_orig is not None and effective_orig <= price:
+                    effective_orig = None
+
                 store_info["current_price"] = price
-                store_info["original_price"] = orig_price
+                store_info["original_price"] = effective_orig
                 store_info["last_checked"] = now_iso
                 store_info["error"] = None
 
@@ -270,14 +275,14 @@ def main():
                 # Päivitetään saman päivän merkintä tai lisätään uusi
                 if history and history[-1].get("date") == today_str:
                     history[-1]["price"] = price
-                    history[-1]["original_price"] = orig_price
+                    history[-1]["original_price"] = effective_orig
                 else:
                     history.append({
                         "date": today_str,
                         "price": price,
-                        "original_price": orig_price
+                        "original_price": effective_orig
                     })
-                logging.info(f"    OK: {price:.2f} € (norm. {orig_price if orig_price else '-'})")
+                logging.info(f"    OK: {price:.2f} € (norm. {effective_orig if effective_orig else '-'})")
             else:
                 # Säilytetään edellinen hinta ja kirjataan virhe
                 store_info["error"] = error or "Tuntematon virhe"
