@@ -8,6 +8,7 @@
       "[itemprop='price']"
     ],
     "original_price_selectors": [
+      ".css-4jky3p",
       ".product-price .old-price",
       ".price-box .old-price .price",
       "del .price",
@@ -41,20 +42,6 @@
       ".old-price .price",
       ".price-from .price",
       "del .price"
-    ]
-  },
-  "nonpaints.com": {
-    "name": "CROP (Nonpaints)",
-    "price_selectors": [
-      ".special-price .price",
-      ".price-final_price .price",
-      ".product-info-price .price",
-      "[itemprop='price']"
-    ],
-    "original_price_selectors": [
-      ".old-price .price",
-      ".price-box .old-price .price",
-      "del"
     ]
   }
 }
