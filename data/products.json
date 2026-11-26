@@ -51,68 +51,6 @@
               "original_price": 63.45
             }
           ]
-        },
-        "nonpaints.com": {
-          "name": "CROP (Nonpaints)",
-          "url": "https://www.nonpaints.com/fi/bilt-hamber-touch-less-snow-foam-5-litraa",
-          "current_price": 44.01,
-          "original_price": null,
-          "last_checked": "2026-11-26T16:36:02Z",
-          "error": null,
-          "history": [
-            {
-              "date": "2026-11-26",
-              "price": 44.01,
-              "original_price": null
-            }
-          ]
-        }
-      }
-    },
-    {
-      "id": "bilt-hamber-auto-wash-1000ml",
-      "name": "Bilt Hamber Auto-Wash 1000ml",
-      "brand": "Bilt Hamber",
-      "target_price": null,
-      "stores": {
-        "autodude.fi": {
-          "name": "Autodude",
-          "url": "https://www.autodude.fi/fi/tuote/autoshampoo_bilt_hamber_auto_wash",
-          "current_price": 41.31,
-          "original_price": null,
-          "last_checked": "2026-11-26T16:36:02Z",
-          "error": null,
-          "history": [
-            {
-              "date": "2026-11-26",
-              "price": 41.31,
-              "original_price": null
-            }
-          ]
-        },
-        "autonhoitokauppa.fi": {
-          "name": "Autonhoitokauppa",
-          "url": "https://www.autonhoitokauppa.fi/bilt-hamber-auto-wash-1-l",
-          "current_price": 46.9,
-          "original_price": null,
-          "last_checked": "2026-11-26T16:36:02Z",
-          "error": null,
-          "history": [
-            {
-              "date": "2026-11-26",
-              "price": 46.9,
-              "original_price": null
-            }
-          ]
-        },
-        "springriver.fi": {
-          "name": "SpringRiver",
-          "url": "https://www.springriver.fi/bilt-hamber-auto-wash-1l.html",
-          "current_price": null,
-          "original_price": null,
-          "last_checked": null,
-          "error": "HTTP-virhe: ('Connection aborted.', RemoteDisconnected('Remote end closed connection without response'))",
-          "history": []
         }
       }
     }
