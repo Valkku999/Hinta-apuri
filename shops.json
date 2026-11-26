@@ -29,5 +29,48 @@
       "del",
       "s"
     ]
+  },
+  "springriver.fi": {
+    "name": "SpringRiver",
+    "price_selectors": [
+      ".special-price .price",
+      ".price-final_price .price",
+      ".regular-price .price",
+      "[itemprop='price']"
+    ],
+    "original_price_selectors": [
+      ".old-price .price",
+      ".price-from .price",
+      "del .price"
+    ]
+  },
+  "nonpaints.com": {
+    "name": "CROP (Nonpaints)",
+    "price_selectors": [
+      ".special-price .price",
+      ".price-final_price .price",
+      ".product-info-price .price",
+      "[itemprop='price']"
+    ],
+    "original_price_selectors": [
+      ".old-price .price",
+      ".price-box .old-price .price",
+      "del"
+    ]
+  },
+  "hockeybase.fi": {
+    "name": "HockeyBase",
+    "price_selectors": [
+      ".product-info-price .special-price .price",
+      ".product-info-price .price-final_price .price",
+      ".product-info-price .price",
+      "[data-price-type='finalPrice'] .price",
+      "[itemprop='price']"
+    ],
+    "original_price_selectors": [
+      ".product-info-price .old-price .price",
+      "[data-price-type='oldPrice'] .price",
+      "del .price"
+    ]
   }
 }
