@@ -239,6 +239,11 @@ def fetch_store_price(url: str, shops_config: dict) -> tuple[float | None, float
         price = fb_price
         if orig_price is None and fb_orig is not None:
             orig_price = fb_orig
+
+    if price is None:
+        variant_price = extract_variant_prices_from_html(response.text)
+        if variant_price is not None:
+            price = variant_price
             
     if price is not None and orig_price is not None and orig_price <= price:
         orig_price = None
@@ -335,6 +340,23 @@ def extract_fallback_price(soup: BeautifulSoup) -> tuple[float | None, float | N
         original_price = min(higher_struck)
 
     return current_price, original_price
+
+
+def extract_variant_prices_from_html(html_text: str) -> float | None:
+    """Etsii variantti-/kokokohtaisia hintoja upotetusta JSON- tai data-rakenteesta."""
+    found_prices = []
+
+    # Etsitään esim. "price": 379.00 tai "price": "379,00" -tyyppisiä kenttiä skripteistä/datasta
+    for match in re.findall(r'"(?:price|finalPrice|specialPrice)"\s*:\s*"?(\d{2,4}(?:[.,]\d{1,2})?)"?', html_text):
+        parsed = parse_price(match)
+        if parsed is not None and 10.0 <= parsed <= 10000.0:
+            found_prices.append(parsed)
+
+    if not found_prices:
+        return None
+
+    # Palautetaan pienin kelvollinen varianttihinta (usein "alkaen"- tai peruskokohinta)
+    return min(found_prices)
 
 
 def main():
