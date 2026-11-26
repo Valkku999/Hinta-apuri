@@ -252,64 +252,85 @@ def fetch_store_price(url: str, shops_config: dict) -> tuple[float | None, float
 
 
 def extract_fallback_price(soup: BeautifulSoup) -> tuple[float | None, float | None]:
-    """Yleinen varahaku mille tahansa kaupalle, kun JSON-LD ja shops.json eivät tuota hintaa."""
+    """Automaattinen hintahaku ilman manuaalisia selektoreita uusille tuotteille ja kaupoille."""
     candidates = []
-    currency_pattern = re.compile(r"(€|EUR)", re.I)
-    price_attr_pattern = re.compile(r"(price|hinta|amount|cost|tarjous|sale|offer)", re.I)
-    ignore_attr_pattern = re.compile(r"(title|name|heading|sku|code|model|shipping|toimitus|vero|tax)", re.I)
+    currency_re = re.compile(r"(€|\bEUR\b)", re.I)
+    price_hint_re = re.compile(r"(price|hinta|amount|cost|tarjous|sale|offer|total)", re.I)
+    skip_hint_re = re.compile(r"(shipping|toimitus|installment|osamaksu|klarna|save|säästä|discount|alennus|cart|kori)", re.I)
 
+    # 1. Konekieliset meta- ja data-kentät
     for el in soup.find_all(["meta", "data"]):
         itemprop = str(el.get("itemprop") or "").lower()
-        if itemprop == "price" or el.get("data-price-amount"):
-            raw_val = el.get("content") or el.get("value") or el.get("data-price-amount")
+        data_price = el.get("data-price-amount") or el.get("data-price")
+        if itemprop == "price" or data_price is not None:
+            raw_val = el.get("content") or el.get("value") or data_price
             parsed = parse_price(raw_val)
             if parsed is not None:
                 candidates.append((parsed, False))
 
-    for el in soup.find_all(["span", "div", "p", "strong", "b"]):
+    # 2. Näkyvät hintaelementit, joissa on valuuttamerkki (€ tai EUR)
+    for el in soup.find_all(["span", "div", "p", "strong", "b", "del", "s", "strike"]):
+        text_val = el.get_text(" ", strip=True)
+        if not text_val or len(text_val) > 50:
+            continue
+        if not currency_re.search(text_val):
+            continue
+
         attrs_blob = " ".join([
             str(el.get("id") or ""),
             " ".join(el.get("class") or []),
-            str(el.get("itemprop") or "")
+            str(el.get("itemprop") or ""),
+            str(el.get("data-testid") or "")
         ])
-        if not price_attr_pattern.search(attrs_blob):
-            continue
-        if ignore_attr_pattern.search(attrs_blob):
-            continue
-
-        text_val = el.get_text(" ", strip=True)
-        if not text_val or len(text_val) > 40 or not currency_pattern.search(text_val):
+        if skip_hint_re.search(attrs_blob) or skip_hint_re.search(text_val):
             continue
 
         parsed = parse_price(text_val)
-        if parsed is not None:
-            style_blob = (str(el.get("style") or "") + " " + " ".join(el.get("class") or [])).lower()
-            is_struck = (
-                el.name in ("del", "s", "strike")
-                or el.find_parent(["del", "s", "strike"]) is not None
-                or "line-through" in style_blob
-                or "old" in style_blob
-                or "compare" in style_blob
-            )
-            candidates.append((parsed, is_struck))
+        if parsed is None or parsed < 1.0:
+            continue
 
+        style_blob = (str(el.get("style") or "") + " " + " ".join(el.get("class") or [])).lower()
+        is_struck = (
+            el.name in ("del", "s", "strike")
+            or el.find_parent(["del", "s", "strike"]) is not None
+            or "line-through" in style_blob
+            or "old" in style_blob
+            or "compare" in style_blob
+            or "was" in style_blob
+        )
+        has_price_hint = bool(price_hint_re.search(attrs_blob))
+        candidates.append((parsed, is_struck, has_price_hint))
+
+    # 3. Jos elementtihaku ei löytänyt mitään, etsitään sivun tekstistä selkeät euromäärät
     if not candidates:
         page_text = soup.get_text(" ", strip=True)
-        euro_matches = re.findall(r"(\d{1,4}(?:[ \u00a0.]\d{3})*(?:,\d{2})?|\d{1,4}\.\d{2})\s*€", page_text)
+        euro_matches = re.findall(
+            r"(?:€|\bEUR\b)?\s*(\d{1,4}(?:[ \u00a0.]\d{3})*(?:,\d{1,2})?|\d{1,4}\.\d{2})\s*(?:€|\bEUR\b)",
+            page_text,
+            re.I
+        )
         for m in euro_matches:
             parsed = parse_price(m)
             if parsed is not None and parsed >= 5.0:
-                candidates.append((parsed, False))
+                candidates.append((parsed, False, False))
 
     if not candidates:
         return None, None
 
-    non_struck = [p for p, struck in candidates if not struck]
-    struck = [p for p, struck in candidates if struck]
+    # Järjestetään niin, että hintaan viittaavat elementit ja ei-yliviivatut hinnat painottuvat
+    non_struck_hinted = [p for p, struck, hinted in candidates if not struck and hinted]
+    non_struck_all = [p for p, struck, _ in candidates if not struck]
+    struck_all = [p for p, struck, _ in candidates if struck]
 
-    current_price = min(non_struck) if non_struck else min(p for p, _ in candidates)
+    if non_struck_hinted:
+        current_price = min(non_struck_hinted)
+    elif non_struck_all:
+        current_price = min(non_struck_all)
+    else:
+        current_price = min(p for p, _, _ in candidates)
+
     original_price = None
-    higher_struck = [p for p in struck if p > current_price]
+    higher_struck = [p for p in struck_all if p > current_price]
     if higher_struck:
         original_price = min(higher_struck)
 
