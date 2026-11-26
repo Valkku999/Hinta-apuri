@@ -36,21 +36,6 @@
               "original_price": null
             }
           ]
-        },
-        "springriver.fi": {
-          "name": "SpringRiver",
-          "url": "https://www.springriver.fi/tuotteet/bilt-hamber.html?dir=desc&order=position&price=40-50",
-          "current_price": 43.9,
-          "original_price": 63.45,
-          "last_checked": "2026-11-26T15:00:00Z",
-          "error": "HTTP-virhe: HTTPSConnectionPool(host='www.springriver.fi', port=443): Max retries exceeded with url: /tuotteet/bilt-hamber.html?dir=desc&order=position&price=40-50 (Caused by SSLError(SSLError(1, '[SSL: SSLV3_ALERT_HANDSHAKE_FAILURE] ssl/tls alert handshake failure (_ssl.c:1018)')))",
-          "history": [
-            {
-              "date": "2026-11-26",
-              "price": 43.9,
-              "original_price": 63.45
-            }
-          ]
         }
       }
     },
