@@ -63,18 +63,18 @@
       }
     },
     {
-      "id": "ccm-xf90",
-      "name": "CCM XF90",
+      "id": "ccm-tacks-xf-90-senior",
+      "name": "CCM Tacks XF 90 Senior",
       "brand": "CCM",
-      "target_price": 379.0,
+      "target_price": null,
       "stores": {
         "hockeybase.fi": {
-          "name": "hockeybase.fi",
+          "name": "HockeyBase",
           "url": "https://www.hockeybase.fi/products/ccm-tacks-xf-90-senior-ice-hockey-skate.html",
           "current_price": null,
           "original_price": null,
-          "last_checked": "2026-11-26T20:12:45Z",
-          "error": "Hintaa ei löytynyt sivulta (JSON-LD eikä CSS-selektorit täsmänneet)",
+          "last_checked": null,
+          "error": null,
           "history": []
         }
       }
