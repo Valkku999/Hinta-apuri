@@ -258,7 +258,6 @@ def extract_fallback_price(soup: BeautifulSoup) -> tuple[float | None, float | N
     price_attr_pattern = re.compile(r"(price|hinta|amount|cost|tarjous|sale|offer)", re.I)
     ignore_attr_pattern = re.compile(r"(title|name|heading|sku|code|model|shipping|toimitus|vero|tax)", re.I)
 
-    # 1. Konekieliset meta/data-hintakentät (esim. <meta itemprop="price" content="379">)
     for el in soup.find_all(["meta", "data"]):
         itemprop = str(el.get("itemprop") or "").lower()
         if itemprop == "price" or el.get("data-price-amount"):
@@ -267,7 +266,6 @@ def extract_fallback_price(soup: BeautifulSoup) -> tuple[float | None, float | N
             if parsed is not None:
                 candidates.append((parsed, False))
 
-    # 2. Näkyvät hintaelementit: vaaditaan valuuttamerkki (€ tai EUR), jotta mallinimet (esim. XF 90) eivät tartu
     for el in soup.find_all(["span", "div", "p", "strong", "b"]):
         attrs_blob = " ".join([
             str(el.get("id") or ""),
@@ -295,7 +293,6 @@ def extract_fallback_price(soup: BeautifulSoup) -> tuple[float | None, float | N
             )
             candidates.append((parsed, is_struck))
 
-    # 3. Viimeinen varakeino: etsitään koko sivulta vain selkeät "luku + €" -merkinnät
     if not candidates:
         page_text = soup.get_text(" ", strip=True)
         euro_matches = re.findall(r"(\d{1,4}(?:[ \u00a0.]\d{3})*(?:,\d{2})?|\d{1,4}\.\d{2})\s*€", page_text)
