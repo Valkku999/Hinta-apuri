@@ -1,0 +1,55 @@
+{
+  "last_updated": "2026-11-26T15:00:00Z",
+  "products": [
+    {
+      "id": "bilt-hamber-touch-less-5l",
+      "name": "Bilt Hamber Touch-Less 5L",
+      "brand": "Bilt Hamber",
+      "target_price": null,
+      "stores": {
+        "autodude.fi": {
+          "name": "Autodude",
+          "url": "https://www.autodude.fi/fi/tuote/esipesuaine_bilt_hamber_touch_less_v2",
+          "current_price": 44.01,
+          "original_price": 48.90,
+          "last_checked": "2026-11-26T15:00:00Z",
+          "error": null,
+          "history": [
+            { "date": "2026-11-26", "price": 44.01, "original_price": 48.90 }
+          ]
+        },
+        "autonhoitokauppa.fi": {
+          "name": "Autonhoitokauppa",
+          "url": "https://www.autonhoitokauppa.fi/bilt-hamber-touch-less-5-l",
+          "current_price": 49.90,
+          "original_price": null,
+          "last_checked": "2026-11-26T15:00:00Z",
+          "error": null,
+          "history": [
+            { "date": "2026-11-26", "price": 49.90, "original_price": null }
+          ]
+        },
+        "springriver.fi": {
+          "name": "SpringRiver",
+          "url": "https://www.springriver.fi/tuotteet/bilt-hamber.html?dir=desc&order=position&price=40-50",
+          "current_price": 43.90,
+          "original_price": 63.45,
+          "last_checked": "2026-11-26T15:00:00Z",
+          "error": null,
+          "history": [
+            { "date": "2026-11-26", "price": 43.90, "original_price": 63.45 }
+          ]
+        },
+        "nonpaints.com": {
+          "name": "CROP (Nonpaints)",
+          "url": "https://www.nonpaints.com/fi/bilt-hamber-touch-less-snow-foam-5-litraa",
+          "current_price": null,
+          "original_price": null,
+          "last_checked": null,
+          "error": "Odottaa ensimmäistä ajoa",
+          "history": []
+        }
+      }
+    }
+  ]
+}

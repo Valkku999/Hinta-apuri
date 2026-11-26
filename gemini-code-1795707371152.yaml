@@ -1,0 +1,58 @@
+name: Käsittele tuotemuutos (GitHub Issue)
+
+on:
+  issues:
+    types: [opened]
+
+permissions:
+  contents: write
+  issues: write
+
+jobs:
+  update-products:
+    if: startsWith(github.event.issue.title, '[HINTASEURANTA]')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Hae repositorio
+        uses: actions/checkout@v4
+
+      - name: Asenna Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Asenna riippuvuudet
+        run: pip install -r requirements.txt
+
+      - name: Päivitä data/products.json Issuen perusteella
+        env:
+          ISSUE_BODY: ${{ github.event.issue.body }}
+        run: python manage_issue.py
+
+      - name: Hae heti tuoreet hinnat muokatulle listalle
+        run: python scraper.py
+
+      - name: Tallenna muutokset repoon
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/products.json
+          git diff --staged --quiet || git commit -m "feat: päivitä tuotelista Issuen #${{ github.event.issue.number }} pohjalta"
+          git push
+
+      - name: Sulje ja kuittaa Issue
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: '✅ Tuotelista on päivitetty `data/products.json`-tiedostoon ja tuoreet hinnat on haettu! Sivu päivittyy GitHub Pagesiin noin minuutin kuluessa.'
+            });
+            await github.rest.issues.update({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              state: 'closed'
+            });

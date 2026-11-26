@@ -1,0 +1,60 @@
+{
+  "autodude.fi": {
+    "name": "Autodude",
+    "price_selectors": [
+      ".product-price .current-price",
+      ".price-box .special-price .price",
+      ".price-box .price",
+      "[itemprop='price']"
+    ],
+    "original_price_selectors": [
+      ".product-price .old-price",
+      ".price-box .old-price .price",
+      "del .price",
+      "s"
+    ]
+  },
+  "autonhoitokauppa.fi": {
+    "name": "Autonhoitokauppa",
+    "price_selectors": [
+      ".product-page__price .price--highlight",
+      ".product-page__price .price",
+      ".price__current",
+      "[itemprop='price']"
+    ],
+    "original_price_selectors": [
+      ".product-page__price .price--compare",
+      ".price__compare",
+      "del",
+      "s"
+    ]
+  },
+  "springriver.fi": {
+    "name": "SpringRiver",
+    "price_selectors": [
+      ".special-price .price",
+      ".price-final_price .price",
+      ".regular-price .price",
+      "[itemprop='price']"
+    ],
+    "original_price_selectors": [
+      ".old-price .price",
+      ".price-from .price",
+      "del .price"
+    ]
+  },
+  "nonpaints.com": {
+    "name": "CROP (Nonpaints)",
+    "price_selectors": [
+      ".special-price .price",
+      ".price-final_price .price",
+      ".product-info-price .price",
+      "[itemprop='price']"
+    ],
+    "original_price_selectors": [
+      ".old-price .price",
+      ".price-box .old-price .price",
+      "del"
+    ]
+  }
+}
