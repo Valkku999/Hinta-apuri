@@ -1,5 +1,5 @@
 {
-  "last_updated": "2026-11-26T18:58:09Z",
+  "last_updated": "2026-11-26T19:10:34Z",
   "products": [
     {
       "id": "bilt-hamber-touch-less-5l",
@@ -12,7 +12,7 @@
           "url": "https://www.autodude.fi/fi/tuote/esipesuaine_bilt_hamber_touch_less_v2",
           "current_price": 44.01,
           "original_price": 48.9,
-          "last_checked": "2026-11-26T18:58:09Z",
+          "last_checked": "2026-11-26T19:10:34Z",
           "error": null,
           "history": [
             {
@@ -27,7 +27,7 @@
           "url": "https://www.autonhoitokauppa.fi/bilt-hamber-touch-less-5-l",
           "current_price": 49.9,
           "original_price": null,
-          "last_checked": "2026-11-26T18:58:09Z",
+          "last_checked": "2026-11-26T19:10:34Z",
           "error": null,
           "history": [
             {
@@ -65,7 +65,7 @@
           "url": "https://www.autodude.fi/fi/tuote/autoshampoo_bilt_hamber_auto_wash/HS5999-5718?gad_source=1&gad_campaignid=21860150135&gbraid=0AAAAA-ZvmwhXsIPq3wYsT-fD8tEs4C79T&gclid=CjwKCAiAzp_YBhAJEiwASf8kHfUchwtBa5NnA9AXSQXXXhyYxGYm6h1KUv8_rKKuGMmZKkfHNt9UExoClHkQAvD_BwE",
           "current_price": 41.31,
           "original_price": 45.9,
-          "last_checked": "2026-11-26T18:58:09Z",
+          "last_checked": "2026-11-26T19:10:34Z",
           "error": null,
           "history": [
             {
@@ -74,15 +74,6 @@
               "original_price": 45.9
             }
           ]
-        },
-        "springriver.fi": {
-          "name": "SpringRiver",
-          "url": "https://www.springriver.fi/bilt-hamber-auto-wash-1l.html",
-          "current_price": null,
-          "original_price": null,
-          "last_checked": null,
-          "error": "HTTP-virhe: HTTPSConnectionPool(host='www.springriver.fi', port=443): Max retries exceeded with url: /bilt-hamber-auto-wash-1l.html (Caused by SSLError(SSLError(1, '[SSL: SSLV3_ALERT_HANDSHAKE_FAILURE] ssl/tls alert handshake failure (_ssl.c:1018)')))",
-          "history": []
         }
       }
     }
